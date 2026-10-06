@@ -1,6 +1,6 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
-import { useIssues } from "@/hooks/query-hooks/use-issues";
+import React, { useEffect } from "react";
+import { useIssueRead } from "@/hooks/query-hooks/use-issue-read";
 import { useIsInViewport } from "@/hooks/use-is-in-viewport";
 import { IssueDetailsHeader } from "./issue-details-header";
 import { IssueDetailsInfo } from "./issue-details-info";
@@ -10,26 +10,17 @@ const IssueDetails: React.FC<{
   issueKey: string | null;
   setIssueKey: React.Dispatch<React.SetStateAction<IssueType["key"] | null>>;
 }> = ({ issueKey, setIssueKey }) => {
-  const { issues } = useIssues();
+  const { data: issueInfo } = useIssueRead(issueKey);
   const renderContainerRef = React.useRef<HTMLDivElement>(null);
   const [isInViewport, viewportRef] = useIsInViewport({ threshold: 1 });
 
-  const getIssue = useCallback(
-    (issueKey: string | null) => {
-      return issues?.find((issue) => issue.key === issueKey);
-    },
-    [issues]
-  );
-  const [issueInfo, setIssueInfo] = useState(() => getIssue(issueKey));
-
   useEffect(() => {
-    setIssueInfo(() => getIssue(issueKey));
     if (renderContainerRef.current) {
       renderContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [issueKey, getIssue]);
+  }, [issueKey]);
 
-  if (!issueInfo || !issues) return <div />;
+  if (!issueInfo) return <div />;
 
   return (
     <div

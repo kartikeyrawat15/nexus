@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/nextjs";
+import { useDemoUser as useUser } from "@/context/demo-user";
 import { FaChevronUp } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -10,25 +10,22 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Avatar } from "@/components/avatar";
-import { useSprints } from "@/hooks/query-hooks/use-sprints";
+import { useQuery } from "@tanstack/react-query";
+import { useRepository } from "@/context/repository-provider";
+import { repositoryQueries } from "@/integration/repository-queries";
 import { IssueAssigneeSelect } from "../../issue-select-assignee";
 import { useIssues } from "@/hooks/query-hooks/use-issues";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 
 const IssueDetailsInfoAccordion: React.FC<{ issue: IssueType }> = ({
   issue,
 }) => {
   const { updateIssue } = useIssues();
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
-  const { sprints } = useSprints();
+  const { repository, projectId } = useRepository();
+  const { data: sprints } = useQuery(repositoryQueries.sprintHistory(repository, projectId));
   const { user } = useUser();
   const [openAccordion, setOpenAccordion] = useState("details");
 
   function handleAutoAssign() {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
 
     updateIssue({
       issueId: issue.id,

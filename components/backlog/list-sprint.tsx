@@ -5,7 +5,7 @@ import { BsThreeDots } from "react-icons/bs";
 import { Button } from "@/components/ui/button";
 import { IssueList } from "./issue-list";
 import { IssueStatusCount } from "../issue/issue-status-count";
-import { type Sprint } from "@prisma/client";
+import { type SprintView as Sprint } from "@/integration/legacy-views";
 import { type IssueType } from "@/utils/types";
 import { SprintDropdownMenu } from "./sprint-menu";
 import { DropdownTrigger } from "../ui/dropdown-menu";
@@ -18,10 +18,8 @@ import { StartSprintModal } from "@/components/modals/start-sprint";
 import { CompleteSprintModal } from "../modals/complete-sprint";
 import { UpdateSprintModal } from "../modals/update-sprint";
 import { AlertModal } from "../modals/alert";
-import { useQueryClient } from "@tanstack/react-query";
 import { useSprints } from "@/hooks/query-hooks/use-sprints";
 import { toast } from "../toast";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 import { getPluralEnd } from "@/utils/helpers";
 
 const SprintList: React.FC<{
@@ -55,21 +53,13 @@ const SprintListHeader: React.FC<{ issues: IssueType[]; sprint: Sprint }> = ({
 }) => {
   const [updateModalIsOpen, setUpdateModalIsOpen] = useState(false);
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
-  const queryClient = useQueryClient();
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
   const { deleteSprint } = useSprints();
 
   function handleDeleteSprint() {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
     deleteSprint(
       { sprintId: sprint.id },
       {
         onSuccess: () => {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          queryClient.invalidateQueries(["issues"]);
           toast.success({
             message: `Deleted sprint ${sprint.name}`,
             description: "Sprint deleted",

@@ -1,8 +1,8 @@
 "use client";
-import { api } from "@/utils/api";
+import { useRepository } from "@/context/repository-provider";
+import { repositoryQueries } from "@/integration/repository-queries";
 import { useQuery } from "@tanstack/react-query";
 import { useUpdateIssue } from "./use-update-issue";
-import { useUpdateIssuesBatch } from "./use-update-batch";
 import { usePostIssue } from "./use-post-issue";
 import { useDeleteIssue } from "./use-delete-issue";
 
@@ -12,16 +12,12 @@ export const TOO_MANY_REQUESTS = {
 };
 
 export const useIssues = () => {
+  const { repository, projectId } = useRepository();
   const { data: issues, isLoading: issuesLoading } = useQuery(
-    ["issues"],
-    ({ signal }) => api.issues.getIssues({ signal }),
-    {
-      refetchOnMount: false,
-    }
+    repositoryQueries.issues(repository, projectId)
   );
 
-  const { updateIssuesBatch, batchUpdating } = useUpdateIssuesBatch();
-  const { updateIssue, isUpdating } = useUpdateIssue();
+  const { updateIssue, isUpdating, moveIssue, isMoving } = useUpdateIssue();
   const { createIssue, isCreating } = usePostIssue();
   const { deleteIssue, isDeleting } = useDeleteIssue();
 
@@ -30,8 +26,8 @@ export const useIssues = () => {
     issuesLoading,
     updateIssue,
     isUpdating,
-    updateIssuesBatch,
-    batchUpdating,
+    moveIssue,
+    isMoving,
     createIssue,
     isCreating,
     deleteIssue,

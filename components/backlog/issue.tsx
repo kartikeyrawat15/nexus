@@ -81,7 +81,7 @@ const Issue: React.FC<{
               {isEpic(issue.parent) ? <EpicName issue={issue.parent} /> : null}
             </div>
           </div>
-          <IssueContextMenu isEditing={isEditing} className="flex-auto">
+          <IssueContextMenu issue={issue} isEditing={isEditing} className="flex-auto">
             <ContextTrigger className="h-8 w-full" />
           </IssueContextMenu>
           <div className="relative ml-2 flex min-w-fit items-center justify-end gap-x-2">
@@ -115,6 +115,7 @@ export const EpicName: React.FC<{
   issue: IssueType["parent"];
   className?: string;
 }> = ({ issue, className }) => {
+  if (!issue) return null;
   const lightColor = LIGHT_COLORS.find(
     (color) => color.hex == issue.sprintColor
   );

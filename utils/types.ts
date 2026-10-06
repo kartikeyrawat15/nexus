@@ -1,8 +1,9 @@
-import { type GetIssuesResponse } from "@/app/api/issues/route";
+import { type IssueView } from "@/integration/legacy-views";
 
 export type IssueCountType = {
   TODO: number;
   IN_PROGRESS: number;
+  IN_REVIEW: number;
   DONE: number;
 };
 
@@ -11,4 +12,4 @@ export type MenuOptionType = {
   id: string;
 };
 
-export type IssueType = GetIssuesResponse["issues"][number];
+export type IssueType = IssueView;

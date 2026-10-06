@@ -16,7 +16,7 @@ import { Button } from "../ui/button";
 import { useSelectedIssueContext } from "@/context/use-selected-issue-context";
 import { EmtpyIssue } from "../issue/issue-empty";
 import { type IssueType } from "@/utils/types";
-import { useUser } from "@clerk/clerk-react";
+import { useDemoUser as useUser } from "@/context/demo-user";
 import { LIGHT_COLORS } from "../color-picker";
 import {
   assigneeNotInFilters,
@@ -28,7 +28,6 @@ import {
 } from "@/utils/helpers";
 import { useFiltersContext } from "@/context/use-filters-context";
 import { ProgressBar } from "@/components/progress-bar";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 
 type CreateIssueProps = {
   name: string;
@@ -41,7 +40,6 @@ const EpicsTable: React.FC = () => {
   const { createIssue, isCreating } = useIssues();
   const [isCreatingEpic, setIsCreatingEpic] = useState(false);
   const renderContainerRef = useRef<HTMLDivElement>(null);
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
   const { user } = useUser();
 
   useLayoutEffect(() => {
@@ -56,10 +54,6 @@ const EpicsTable: React.FC = () => {
     parentId = null,
     sprintColor = null,
   }: CreateIssueProps) {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
     if (!name) {
       return;
     }

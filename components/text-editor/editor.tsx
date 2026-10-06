@@ -14,6 +14,7 @@ import { useSharedHistoryContext } from "./context/shared-history";
 import CodeHighlightPlugin from "./plugins/code-highlight-plugin";
 import { EditorComposer } from "./context/lexical-composer";
 import clsx from "clsx";
+import { WorkbenchEditorToolbar } from "@/components/workbench/editor-toolbar";
 
 export type EditorContentType = SerializedEditorState | undefined;
 
@@ -36,7 +37,8 @@ export const Editor: React.FC<{
   onSave?: (state: EditorContentType) => void;
   onCancel?: () => void;
   className?: string;
-}> = ({ action, onSave, onCancel, content, className }) => {
+  compact?: boolean;
+}> = ({ action, onSave, onCancel, content, className, compact = false }) => {
   const { historyState } = useSharedHistoryContext();
   const [jsonState, setJsonState] = useState<EditorContentType>(content);
 
@@ -49,12 +51,12 @@ export const Editor: React.FC<{
         )}
       >
         <EditorComposer readonly={false} jsonState={jsonState}>
-          <ToolbarPlugin />
+          {compact ? <WorkbenchEditorToolbar /> : <ToolbarPlugin />}
           <div className="relative">
             <RichTextPlugin
               ErrorBoundary={LexicalErrorBoundary}
               contentEditable={
-                <ContentEditable className="min-h-[100px] w-full resize-none overflow-hidden text-ellipsis px-2.5 py-4 outline-none" />
+                <ContentEditable aria-label={action === "comment" ? "Comment text" : "Description text"} className="min-h-[100px] w-full resize-none overflow-hidden text-ellipsis px-2.5 py-4 outline-none" />
               }
               placeholder={
                 <div className="pointer-events-none absolute top-6 select-none px-3 text-sm text-gray-500">

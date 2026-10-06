@@ -9,10 +9,11 @@ import {
   ModalTitle,
   ModalTrigger,
 } from "@/components/ui/modal";
-import { type Sprint } from "@prisma/client";
+import { type SprintView as Sprint } from "@/integration/legacy-views";
 import { CompleteSprintForm } from "./form";
 import { type IssueType } from "@/utils/types";
 import { SprintTrophy } from "@/components/svgs";
+import { useIssues } from "@/hooks/query-hooks/use-issues";
 
 const CompleteSprintModal: React.FC<{
   children: ReactNode;
@@ -20,8 +21,11 @@ const CompleteSprintModal: React.FC<{
   sprint: Sprint;
 }> = ({ children, issues, sprint }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const completedIssues = issues.filter((issue) => issue.status === "DONE");
-  const openIssues = issues.filter((issue) => issue.status !== "DONE");
+  const { issues: projectIssues } = useIssues();
+  // Count the full sprint's planning units, including issues hidden by filters.
+  const sprintIssues = (projectIssues ?? []).filter((issue) => issue.sprintId === sprint.id && !issue.parentId);
+  const completedIssues = sprintIssues.filter((issue) => issue.status === "DONE");
+  const openIssues = sprintIssues.filter((issue) => issue.status !== "DONE");
   return (
     <Modal open={isOpen} onOpenChange={setIsOpen}>
       <ModalTrigger asChild>{children}</ModalTrigger>

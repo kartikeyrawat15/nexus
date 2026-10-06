@@ -16,7 +16,6 @@ import {
   SelectViewport,
 } from "@/components/ui/select";
 import { TooltipWrapper } from "../ui/tooltip";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 
 const IssueSelectEpic: React.FC<{
   issue: IssueType;
@@ -25,12 +24,7 @@ const IssueSelectEpic: React.FC<{
 }> = ({ issue, children, className }) => {
   const { issues, updateIssue } = useIssues();
   const [selected, setSelected] = useState<string | null>(issue.parentId);
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
   function handleSelect(id: string | null) {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
     updateIssue({
       issueId: issue.id,
       parentId: id,

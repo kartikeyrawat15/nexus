@@ -1,11 +1,8 @@
-import { ClerkProvider } from "@clerk/nextjs/app-beta";
 import { type Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import "@/styles/globals.css";
 import Toaster from "@/components/toast";
 import QueryProvider from "@/utils/provider";
-import { AuthModalProvider } from "@/context/use-auth-modal";
-import { AuthModal } from "@/components/modals/auth";
 
 export const metadata: Metadata = {
   title: {
@@ -14,22 +11,14 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   keywords: [
-    "Jira",
+    "NEXUS",
     "Next.js",
     "React",
     "Tailwind CSS",
     "Server Components",
     "Radix UI",
-    "Clerk",
     "TanStack",
   ],
-  authors: [
-    {
-      name: "Sebastian Fernandez",
-      url: "https://sebastianfdz.com",
-    },
-  ],
-  creator: "Sebastian Fernandez",
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -41,26 +30,15 @@ export const metadata: Metadata = {
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
+  const content = <QueryProvider>
+    <Toaster position="bottom-left" reverseOrder={false} containerStyle={{ height: "92vh", marginLeft: "3vw" }} />
+    {children}
+  </QueryProvider>;
   return (
     <html lang="en">
       <head />
       <body>
-        <ClerkProvider>
-          <QueryProvider>
-            <AuthModalProvider>
-              <AuthModal />
-              <Toaster
-                position="bottom-left"
-                reverseOrder={false}
-                containerStyle={{
-                  height: "92vh",
-                  marginLeft: "3vw",
-                }}
-              />
-              {children}
-            </AuthModalProvider>
-          </QueryProvider>
-        </ClerkProvider>
+        {content}
       </body>
     </html>
   );

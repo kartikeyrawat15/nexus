@@ -1,6 +1,5 @@
 "use client";
-import { type Sprint } from "@prisma/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { type SprintView as Sprint } from "@/integration/legacy-views";
 import { useForm } from "react-hook-form";
 import { NameField } from "./fields/name";
 import { DurationField } from "./fields/duration";
@@ -9,7 +8,6 @@ import { EndDateField } from "./fields/end-date";
 import { DescriptionField } from "./fields/description";
 import { useSprints } from "@/hooks/query-hooks/use-sprints";
 import { FormSubmit } from "@/components/form/submit";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 
 export type FormValues = {
   name: string;
@@ -42,21 +40,15 @@ const StartSprintForm: React.FC<{
       description: sprint.description ?? "",
     },
   });
-  const { updateSprint, isUpdating } = useSprints();
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
+  const { startSprint, isStarting } = useSprints();
 
-  const queryClient = useQueryClient();
 
   function handleStartSprint(data: FormValues) {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
 
-    updateSprint(
+    startSprint(
       {
         sprintId: sprint.id,
-        status: "ACTIVE",
+        expectedVersion: sprint.version,
         name: data.name,
         duration: data.duration ?? DEFAULT_DURATION,
         description: data.description,
@@ -65,8 +57,6 @@ const StartSprintForm: React.FC<{
       },
       {
         onSuccess: () => {
-          // eslint-disable-next-line
-          queryClient.invalidateQueries(["issues"]);
           handleClose();
         },
       }
@@ -99,7 +89,7 @@ const StartSprintForm: React.FC<{
         submitText="Start"
         ariaLabel="Start sprint"
         onCancel={handleClose}
-        isLoading={isUpdating}
+        isLoading={isStarting}
       />
     </form>
   );

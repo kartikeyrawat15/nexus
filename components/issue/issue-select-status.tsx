@@ -2,7 +2,7 @@ import { Fragment, useState } from "react";
 import { useIssues } from "@/hooks/query-hooks/use-issues";
 import { FaChevronDown } from "react-icons/fa";
 import clsx from "clsx";
-import { type IssueStatus } from "@prisma/client";
+import { type IssueStatus } from "@/domain/types";
 import { type IssueType } from "@/utils/types";
 import { NotImplemented } from "@/components/not-implemented";
 import { capitalizeMany } from "@/utils/helpers";
@@ -18,7 +18,6 @@ import {
   SelectValue,
   SelectViewport,
 } from "@/components/ui/select";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 
 export const statuses: StatusObject[] = [
   {
@@ -30,6 +29,13 @@ export const statuses: StatusObject[] = [
   },
   {
     value: "IN_PROGRESS",
+    smBgColor: "#e0ecfc",
+    lgBgColor: "#0854cc",
+    smTextColor: "#0854cc",
+    lgTextColor: "#fff",
+  },
+  {
+    value: "IN_REVIEW",
     smBgColor: "#e0ecfc",
     lgBgColor: "#0854cc",
     smTextColor: "#0854cc",
@@ -58,6 +64,7 @@ type StatusMap = {
 export const statusMap: StatusMap = {
   DONE: "DONE",
   IN_PROGRESS: "IN PROGRESS",
+  IN_REVIEW: "IN REVIEW",
   TODO: "TO DO",
 };
 
@@ -73,20 +80,14 @@ const IssueSelectStatus: React.FC<{
   );
 
   const { updateIssue, isUpdating } = useIssues();
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
 
   function handleSelectChange(value: IssueType["status"]) {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const newStatus = statuses.find((status) => status.value == value)!;
     updateIssue({
       issueId,
       status: value,
-    });
-    setSelected(newStatus);
+    }, { onSuccess: () => setSelected(newStatus) });
   }
 
   return (

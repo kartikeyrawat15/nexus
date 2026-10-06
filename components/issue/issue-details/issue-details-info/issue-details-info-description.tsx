@@ -4,13 +4,11 @@ import { EditorPreview } from "@/components/text-editor/preview";
 import { Fragment, useState } from "react";
 import { type IssueType } from "@/utils/types";
 import { useIssues } from "@/hooks/query-hooks/use-issues";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 const Description: React.FC<{ issue: IssueType }> = ({ issue }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { updateIssue } = useIssues();
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
 
-  const [content, setContent] = useState<SerializedEditorState | undefined>(
+  const content = (
     (issue.description
       ? JSON.parse(issue.description)
       : undefined) as SerializedEditorState
@@ -22,16 +20,11 @@ const Description: React.FC<{ issue: IssueType }> = ({ issue }) => {
   }
 
   function handleSave(state: SerializedEditorState | undefined) {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
-    setContent(state);
     updateIssue({
       issueId: issue.id,
+      expectedVersion: issue.version,
       description: state ? JSON.stringify(state) : undefined,
-    });
-    setIsEditing(false);
+    }, { onSuccess: () => setIsEditing(false) });
   }
 
   function handleCancel() {
@@ -51,6 +44,7 @@ const Description: React.FC<{ issue: IssueType }> = ({ issue }) => {
         ) : (
           <div onMouseDown={handleEdit}>
             <EditorPreview
+              key={issue.description}
               action="description"
               content={content}
               className="transition-all duration-200 hover:bg-gray-100"

@@ -1,11 +1,10 @@
 "use client";
 import React, { Fragment, useCallback, useLayoutEffect, useRef } from "react";
-import { type IssueStatus } from "@prisma/client";
+import { type IssueStatus } from "@/domain/types";
 import "@/styles/split.css";
 import { BoardHeader } from "./header";
 import {
   DragDropContext,
-  type DraggableLocation,
   type DropResult,
 } from "react-beautiful-dnd";
 import { useIssues } from "@/hooks/query-hooks/use-issues";
@@ -13,23 +12,21 @@ import { type IssueType } from "@/utils/types";
 import {
   assigneeNotInFilters,
   epicNotInFilters,
-  insertItemIntoArray,
   isEpic,
   isNullish,
   isSubtask,
   issueNotInSearch,
   issueSprintNotInFilters,
   issueTypeNotInFilters,
-  moveItemWithinArray,
 } from "@/utils/helpers";
 import { IssueList } from "./issue-list";
 import { IssueDetailsModal } from "../modals/board-issue-details";
 import { useSprints } from "@/hooks/query-hooks/use-sprints";
 import { useProject } from "@/hooks/query-hooks/use-project";
 import { useFiltersContext } from "@/context/use-filters-context";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
+import { dragPlacement } from "@/integration/drag-placement";
 
-const STATUSES: IssueStatus[] = ["TODO", "IN_PROGRESS", "DONE"];
+const STATUSES: IssueStatus[] = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
 
 const Board: React.FC = () => {
   const renderContainerRef = useRef<HTMLDivElement>(null);
@@ -72,8 +69,7 @@ const Board: React.FC = () => {
     [search, assignees, epics, issueTypes, filterSprints]
   );
 
-  const { updateIssue } = useIssues();
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
+  const { moveIssue } = useIssues();
 
   useLayoutEffect(() => {
     if (!renderContainerRef.current) return;
@@ -86,22 +82,14 @@ const Board: React.FC = () => {
   }
 
   const onDragEnd = (result: DropResult) => {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
     const { destination, source } = result;
     if (isNullish(destination) || isNullish(source)) return;
-
-    updateIssue({
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+    const status = destination.droppableId as IssueStatus;
+    moveIssue({
       issueId: result.draggableId,
-      status: destination.droppableId as IssueStatus,
-      boardPosition: calculateIssueBoardPosition({
-        activeIssues: issues.filter((issue) => issue.sprintIsActive),
-        destination,
-        source,
-        droppedIssueId: result.draggableId,
-      }),
+      destination: { view: "board", status },
+      placement: dragPlacement([...filterIssues(issues, status)].sort((a, b) => a.boardPosition - b.boardPosition).map((issue) => issue.id), result.draggableId, destination.index),
     });
   };
 
@@ -126,77 +114,5 @@ const Board: React.FC = () => {
     </Fragment>
   );
 };
-
-type IssueListPositionProps = {
-  activeIssues: IssueType[];
-  destination: DraggableLocation;
-  source: DraggableLocation;
-  droppedIssueId: string;
-};
-
-function calculateIssueBoardPosition(props: IssueListPositionProps) {
-  const { prevIssue, nextIssue } = getAfterDropPrevNextIssue(props);
-  let position: number;
-
-  if (isNullish(prevIssue) && isNullish(nextIssue)) {
-    position = 1;
-  } else if (isNullish(prevIssue) && nextIssue) {
-    position = nextIssue.boardPosition - 1;
-  } else if (isNullish(nextIssue) && prevIssue) {
-    position = prevIssue.boardPosition + 1;
-  } else if (prevIssue && nextIssue) {
-    position =
-      prevIssue.boardPosition +
-      (nextIssue.boardPosition - prevIssue.boardPosition) / 2;
-  } else {
-    throw new Error("Invalid position");
-  }
-  return position;
-}
-
-function getAfterDropPrevNextIssue(props: IssueListPositionProps) {
-  const { activeIssues, destination, source, droppedIssueId } = props;
-  const beforeDropDestinationIssues = getSortedBoardIssues({
-    activeIssues,
-    status: destination.droppableId as IssueStatus,
-  });
-  const droppedIssue = activeIssues.find(
-    (issue) => issue.id === droppedIssueId
-  );
-
-  if (!droppedIssue) {
-    throw new Error("dropped issue not found");
-  }
-  const isSameList = destination.droppableId === source.droppableId;
-
-  const afterDropDestinationIssues = isSameList
-    ? moveItemWithinArray(
-        beforeDropDestinationIssues,
-        droppedIssue,
-        destination.index
-      )
-    : insertItemIntoArray(
-        beforeDropDestinationIssues,
-        droppedIssue,
-        destination.index
-      );
-
-  return {
-    prevIssue: afterDropDestinationIssues[destination.index - 1],
-    nextIssue: afterDropDestinationIssues[destination.index + 1],
-  };
-}
-
-function getSortedBoardIssues({
-  activeIssues,
-  status,
-}: {
-  activeIssues: IssueType[];
-  status: IssueStatus;
-}) {
-  return activeIssues
-    .filter((issue) => issue.status === status)
-    .sort((a, b) => a.boardPosition - b.boardPosition);
-}
 
 export { Board };

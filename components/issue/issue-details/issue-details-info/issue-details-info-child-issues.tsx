@@ -14,7 +14,6 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { EmtpyIssue } from "@/components/issue/issue-empty";
 import { useIssues } from "@/hooks/query-hooks/use-issues";
 import { ProgressBar } from "@/components/progress-bar";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 
 const ChildIssueList: React.FC<{
   issues: IssueType[];
@@ -31,7 +30,6 @@ const ChildIssueList: React.FC<{
 }) => {
   const { createIssue, isCreating } = useIssues();
   const [isEditing, setIsEditing] = useState(isAddingChildIssue);
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
 
   function handleCreateIssue({
     name,
@@ -42,10 +40,6 @@ const ChildIssueList: React.FC<{
     type: IssueType["type"];
     parentId: IssueType["id"] | null;
   }) {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
     if (!name) {
       return;
     }
@@ -81,10 +75,6 @@ const ChildIssueList: React.FC<{
       {issues.length ? <ProgressBar issues={issues} /> : null}
       <div className="mt-3" />
       {issues
-        .sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        )
         .map((issue) => {
           return <ChildIssue key={issue.key} issue={issue} />;
         })}
@@ -156,7 +146,7 @@ const ChildIssue: React.FC<{ issue: IssueType }> = ({ issue }) => {
           </Button>
         </div>
       </div>
-      <IssueContextMenu isEditing={isEditing} className="flex-auto">
+      <IssueContextMenu issue={issue} isEditing={isEditing} className="flex-auto">
         <ContextTrigger className="h-8 w-full" />
       </IssueContextMenu>
       <div className="relative ml-2 flex min-w-fit items-center justify-end gap-x-2">

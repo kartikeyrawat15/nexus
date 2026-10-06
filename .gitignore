@@ -8,10 +8,6 @@
 # testing
 /coverage
 
-# database
-/prisma/db.sqlite
-/prisma/db.sqlite-journal
-
 # next.js
 /.next/
 /out/
@@ -42,5 +38,4 @@ yarn-error.log*
 *.tsbuildinfo
 
 # files to ignore
-/prisma/un-seed.ts
 config.load

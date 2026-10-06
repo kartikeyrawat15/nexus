@@ -1,6 +1,6 @@
 import { useIssueDetails } from "@/hooks/query-hooks/use-issue-details";
-import { type UserResource } from "@clerk/types";
-import { type GetIssueCommentResponse } from "@/app/api/issues/[issueId]/comments/route";
+import { type DemoUser } from "@/integration/demo-identity";
+import { type CommentView } from "@/integration/legacy-views";
 import {
   Editor,
   type EditorContentType,
@@ -8,7 +8,7 @@ import {
 import { useKeydownListener } from "@/hooks/use-keydown-listener";
 import { Fragment, useRef, useState } from "react";
 import { useIsInViewport } from "@/hooks/use-is-in-viewport";
-import { useUser } from "@clerk/clerk-react";
+import { useDemoUser as useUser } from "@/context/demo-user";
 import { type SerializedEditorState } from "lexical";
 import { type IssueType } from "@/utils/types";
 import { Avatar } from "@/components/avatar";
@@ -16,7 +16,6 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { EditorPreview } from "@/components/text-editor/preview";
 import { Button } from "@/components/ui/button";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 dayjs.extend(relativeTime);
 
 const Comments: React.FC<{ issue: IssueType }> = ({ issue }) => {
@@ -24,7 +23,6 @@ const Comments: React.FC<{ issue: IssueType }> = ({ issue }) => {
   const [isWritingComment, setIsWritingComment] = useState(false);
   const [isInViewport, ref] = useIsInViewport();
   const { comments, addComment } = useIssueDetails();
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
   const { user } = useUser();
 
   useKeydownListener(scrollRef, ["m", "M"], handleEdit);
@@ -38,10 +36,6 @@ const Comments: React.FC<{ issue: IssueType }> = ({ issue }) => {
   }
 
   function handleSave(state: SerializedEditorState | undefined) {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
     if (!state) {
       setIsWritingComment(false);
       return;
@@ -51,8 +45,7 @@ const Comments: React.FC<{ issue: IssueType }> = ({ issue }) => {
       content: JSON.stringify(state),
       // eslint-disable-next-line
       authorId: user!.id,
-    });
-    setIsWritingComment(false);
+    }, { onSuccess: () => setIsWritingComment(false) });
   }
   function handleCancel() {
     setIsWritingComment(false);
@@ -87,24 +80,20 @@ const Comments: React.FC<{ issue: IssueType }> = ({ issue }) => {
 };
 
 const CommentPreview: React.FC<{
-  comment: GetIssueCommentResponse["comment"];
-  user: UserResource | undefined | null;
+  comment: CommentView;
+  user: DemoUser | undefined | null;
 }> = ({ comment, user }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
-  const { updateComment } = useIssueDetails();
+  const { updateComment, deleteComment } = useIssueDetails();
 
   function handleSave(state: SerializedEditorState | undefined) {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
+    if (!state) return;
     updateComment({
       issueId: comment.issueId,
       commentId: comment.id,
+      expectedVersion: comment.version,
       content: JSON.stringify(state),
-    });
-    setIsEditing(false);
+    }, { onSuccess: () => setIsEditing(false) });
   }
 
   return (
@@ -143,6 +132,7 @@ const CommentPreview: React.FC<{
           />
         ) : (
           <EditorPreview
+            key={comment.content}
             action="comment"
             content={
               comment.content
@@ -161,6 +151,7 @@ const CommentPreview: React.FC<{
               Edit
             </Button>
             <Button
+              onClick={() => deleteComment({ commentId: comment.id, issueId: comment.issueId, expectedVersion: comment.version })}
               customColors
               className="bg-transparent text-xs font-medium text-gray-500 underline-offset-2 hover:underline"
             >
@@ -175,7 +166,7 @@ const CommentPreview: React.FC<{
 
 const AddComment: React.FC<{
   onAddComment: () => void;
-  user: UserResource | undefined | null;
+  user: DemoUser | undefined | null;
   commentsInViewport: boolean;
 }> = ({ onAddComment, user, commentsInViewport }) => {
   function handleAddComment(event: React.MouseEvent<HTMLInputElement>) {

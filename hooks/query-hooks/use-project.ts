@@ -1,18 +1,15 @@
 "use client";
-import { api } from "@/utils/api";
+import { useRepository } from "@/context/repository-provider";
+import { repositoryQueries } from "@/integration/repository-queries";
 import { useQuery } from "@tanstack/react-query";
 
 export const useProject = () => {
+  const { repository, projectId } = useRepository();
   const { data: project, isLoading: projectIsLoading } = useQuery(
-    ["project"],
-    api.project.getProject
+    repositoryQueries.project(repository, projectId)
   );
   const { data: members } = useQuery(
-    ["project-members"],
-    () => api.project.getMembers({ project_id: project?.id ?? "" }),
-    {
-      enabled: !!project?.id,
-    }
+    repositoryQueries.members(repository, projectId)
   );
 
   return {

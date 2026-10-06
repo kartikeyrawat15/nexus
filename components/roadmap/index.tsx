@@ -13,13 +13,15 @@ const Roadmap: React.FC = () => {
   const { issueKey, setIssueKey } = useSelectedIssueContext();
   const renderContainerRef = useRef<HTMLDivElement>(null);
 
-  const { project } = useProject();
+  const { project, projectIsLoading } = useProject();
 
   useLayoutEffect(() => {
     if (!renderContainerRef.current) return;
     const calculatedHeight = renderContainerRef.current.offsetTop;
     renderContainerRef.current.style.height = `calc(100vh - ${calculatedHeight}px)`;
   }, []);
+
+  if (projectIsLoading) return <div role="status">Loading project…</div>;
 
   if (!project) {
     return notFound();

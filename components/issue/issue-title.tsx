@@ -4,7 +4,6 @@ import { Button } from "../ui/button";
 import { MdCheck, MdClose } from "react-icons/md";
 import { type IssueType } from "@/utils/types";
 import { TooltipWrapper } from "../ui/tooltip";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 
 type IssueTitleProps = {
   isEditing: boolean;
@@ -24,20 +23,15 @@ const IssueTitle = React.forwardRef<HTMLInputElement, IssueTitleProps>(
     }, [isEditing, ref]);
 
     const { updateIssue } = useIssues();
-    const [isAuthenticated, openAuthModal] = useIsAuthenticated();
 
     function handleNameChange(e: React.SyntheticEvent) {
       e.stopPropagation();
       e.preventDefault();
-      if (!isAuthenticated) {
-        openAuthModal();
-        return;
-      }
       updateIssue({
         issueId: issue.id,
+        expectedVersion: issue.version,
         name: currentTitle,
-      });
-      setIsEditing(false);
+      }, { onSuccess: () => setIsEditing(false) });
     }
 
     return (

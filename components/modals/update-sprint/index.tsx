@@ -6,7 +6,7 @@ import {
   ModalPortal,
   ModalTitle,
 } from "@/components/ui/modal";
-import { type Sprint } from "@prisma/client";
+import { type SprintView as Sprint } from "@/integration/legacy-views";
 import { UpdateSprintForm } from "./form";
 
 const UpdateSprintModal: React.FC<{

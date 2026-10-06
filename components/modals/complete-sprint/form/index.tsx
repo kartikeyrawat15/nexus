@@ -1,12 +1,9 @@
-import { type Sprint } from "@prisma/client";
+import { type SprintView as Sprint } from "@/integration/legacy-views";
 import { useForm } from "react-hook-form";
 import { SprintDropdownField } from "./fields/sprint-dropdown";
-import { useIssues } from "@/hooks/query-hooks/use-issues";
 import { type IssueType } from "@/utils/types";
-import { isDone } from "@/utils/helpers";
 import { useSprints } from "@/hooks/query-hooks/use-sprints";
 import { FormSubmit } from "@/components/form/submit";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 
 export type FormValues = {
   moveToSprintId: string;
@@ -16,7 +13,7 @@ const CompleteSprintForm: React.FC<{
   sprint: Sprint;
   issues: IssueType[];
   setModalIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ sprint, setModalIsOpen, issues }) => {
+}> = ({ sprint, setModalIsOpen }) => {
   const {
     handleSubmit,
     formState: { errors },
@@ -28,19 +25,14 @@ const CompleteSprintForm: React.FC<{
     },
   });
 
-  const { updateSprint, isUpdating } = useSprints();
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
-  const { updateIssuesBatch, batchUpdating } = useIssues();
+  const { completeSprint, isCompleting } = useSprints();
 
   function handleCompleteSprint(data: FormValues) {
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
-    updateSprint(
+    completeSprint(
       {
         sprintId: sprint.id,
-        status: "CLOSED",
+        expectedVersion: sprint.version,
+        destinationSprintId: data.moveToSprintId === "backlog" ? null : data.moveToSprintId,
       },
       {
         onSuccess: () => {
@@ -48,12 +40,6 @@ const CompleteSprintForm: React.FC<{
         },
       }
     );
-    updateIssuesBatch({
-      ids:
-        issues?.filter((issue) => !isDone(issue)).map((issue) => issue.id) ??
-        [],
-      sprintId: data.moveToSprintId === "backlog" ? null : data.moveToSprintId,
-    });
   }
 
   function handleClose() {
@@ -72,7 +58,7 @@ const CompleteSprintForm: React.FC<{
         submitText="Complete"
         ariaLabel="Complete sprint"
         onCancel={handleClose}
-        isLoading={isUpdating || batchUpdating}
+        isLoading={isCompleting}
       />
     </form>
   );

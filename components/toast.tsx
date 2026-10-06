@@ -15,6 +15,11 @@ type ToastProps = {
 export default Toaster;
 
 export const toast = {
+  undo: (props: ToastProps & { onUndo: () => void }) => {
+    _toast.custom((notification) => <ToastContainer {...props}>
+      <button className="mr-4 text-sm text-blue-600" onClick={() => { props.onUndo(); _toast.dismiss(notification.id); }}>Undo</button>
+    </ToastContainer>, { duration: 15000 });
+  },
   success: (props: ToastProps) => {
     _toast.custom(() => (
       <ToastContainer {...props}>

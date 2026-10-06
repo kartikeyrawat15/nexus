@@ -19,7 +19,6 @@ import {
   ContextLabel,
   ContextPortal,
 } from "@/components/ui/context-menu";
-import { useIsAuthenticated } from "@/hooks/use-is-authed";
 
 type MenuOptionsType = {
   actions: MenuOptionType[];
@@ -41,7 +40,6 @@ const IssueDropdownMenu: React.FC<{
   issue: IssueType;
 }> = ({ children, issue }) => {
   const { deleteIssue, updateIssue } = useIssues();
-  const [isAuthenticated, openAuthModal] = useIsAuthenticated();
 
   const handleIssueAction = (
     id: MenuOptionType["id"],
@@ -49,12 +47,8 @@ const IssueDropdownMenu: React.FC<{
     sprintId?: string
   ) => {
     e.stopPropagation();
-    if (!isAuthenticated) {
-      openAuthModal();
-      return;
-    }
     if (id == "delete") {
-      deleteIssue({ issueId: issue.id });
+      deleteIssue({ issueId: issue.id, expectedVersion: issue.version });
     }
     if (id == "move-to") {
       updateIssue({
@@ -122,9 +116,11 @@ const IssueDropdownMenu: React.FC<{
 };
 const IssueContextMenu: React.FC<{
   children: ReactNode;
+  issue: IssueType;
   isEditing: boolean;
   className?: string;
-}> = ({ children, isEditing, className }) => {
+}> = ({ children, issue, isEditing, className }) => {
+  const { deleteIssue } = useIssues();
   return (
     <div
       data-state={isEditing ? "editing" : "not-editing"}
@@ -140,6 +136,7 @@ const IssueContextMenu: React.FC<{
             <ContextGroup>
               {menuOptions.actions.map((action) => (
                 <ContextItem
+                  onSelect={() => deleteIssue({ issueId: issue.id, expectedVersion: issue.version })}
                   key={action.id}
                   textValue={action.label}
                   className={clsx(

@@ -4,7 +4,7 @@ import { Droppable } from "react-beautiful-dnd";
 import { Issue } from "./issue";
 import clsx from "clsx";
 import { statusMap } from "../issue/issue-select-status";
-import { type IssueStatus } from "@prisma/client";
+import { type IssueStatus } from "@/domain/types";
 import { getPluralEnd } from "@/utils/helpers";
 
 const IssueList: React.FC<{ status: IssueStatus; issues: IssueType[] }> = ({

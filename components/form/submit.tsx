@@ -25,6 +25,7 @@ export const FormSubmit: React.FC<{
         customColors
         customPadding
         onClick={onCancel}
+        type="button"
         className="px-3 py-1.5 font-medium text-inprogress underline-offset-2 hover:underline hover:brightness-110"
         name="cancel"
         aria-label={"cancel"}
