@@ -11,7 +11,13 @@ The project focuses on two things equally:
 **engineering correctness** and **product-quality interaction design**.
 
 ---
+# NEXUS
 
+A local-first engineering workbench for planning, tracking, and shipping product work.
+
+### [→ Try the Live Demo]((https://nexus-five-mu-33.vercel.app/project/overview))
+
+No account, database, or setup required — the demo runs entirely in your browser.
 ## Overview
 
 NEXUS provides a complete demo workspace for exploring realistic software-development workflows.
