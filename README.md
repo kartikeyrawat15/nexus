@@ -11,7 +11,7 @@ The project focuses on two things equally:
 **engineering correctness** and **product-quality interaction design**.
 
 ---
-# NEXUS
+[# NEXUS
 
 A local-first engineering workbench for planning, tracking, and shipping product work.
 
@@ -26,7 +26,7 @@ The application ships with a deterministic demo organization containing multiple
 
 Everything is immediately usable after launching the application.
 
-No authentication, database provisioning, API keys, or external services are required.
+No authentication, database provisioning, API keys, or external services are required.](https://nexus-five-mu-33.vercel.app/project/overview)
 
 ---
 
