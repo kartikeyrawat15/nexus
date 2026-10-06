@@ -15,18 +15,9 @@ The project focuses on two things equally:
 
 A local-first engineering workbench for planning, tracking, and shipping product work.
 
-### [→ Try the Live Demo]((https://nexus-five-mu-33.vercel.app/project/overview))
+### [→ Try the Live Demo](https://nexus-five-mu-33.vercel.app/project/overview)
 
-No account, database, or setup required — the demo runs entirely in your browser.
-## Overview
-
-NEXUS provides a complete demo workspace for exploring realistic software-development workflows.
-
-The application ships with a deterministic demo organization containing multiple projects, team members, sprints, issues, comments, blockers, priorities, child work, and activity history.
-
-Everything is immediately usable after launching the application.
-
-No authentication, database provisioning, API keys, or external services are required.](https://nexus-five-mu-33.vercel.app/project/overview)
+No account, database, or setup required — the demo runs entirely in your browser with dummy data.
 
 ---
 
